@@ -1,5 +1,3 @@
-<script setup></script>
-
 <template>
 	<main>
 		<div class="flex h-full antialiased text-gray-800">
@@ -116,6 +114,7 @@ export default {
 				{ from: "client", content: "How are you?" },
 				{ from: "agent", content: "I'm fine" },
 				{ from: "agent", content: "How can I help you?" },
+				{ from: "client", content: "My laptop does not work" },
 			],
 		};
 	},
