@@ -20,12 +20,12 @@
 							/>
 						</div>
 					</div>
-					<div class="flex flex-col mt-6">
+					<div class="flex flex-col mt-6 overflow-x-hidden overflow-y-auto">
 						<div class="flex flex-row items-center justify-between text-xs">
 							<span class="font-bold">Active Conversations</span>
 							<span class="flex items-center justify-center bg-gray-300 h-4 w-4 rounded-full">{{ activeUserCount }}</span>
 						</div>
-						<div class="flex flex-col space-y-1 mt-4 -mx-2 h-full overflow-y-auto">
+						<div class="flex flex-col space-y-1 mt-4 -mx-2 h-full">
 							<button v-for="user in filteredUsers" :key="user.name" class="flex flex-row items-center hover:bg-gray-100 rounded-xl p-2">
 								<div class="flex items-center justify-center h-8 w-8 bg-indigo-200 rounded-full">{{ user.image }}</div>
 								<div class="ml-2 text-sm font-semibold">{{ user.name }}</div>
@@ -46,7 +46,6 @@
 											</div>
 										</div>
 									</div>
-
 									<div class="col-start-6 col-end-13 p-3 rounded-lg" v-if="chat.from === 'client'">
 										<div class="flex items-center justify-start flex-row-reverse">
 											<div class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">A</div>
@@ -55,55 +54,6 @@
 											</div>
 										</div>
 									</div>
-
-									<!-- <div class="col-start-1 col-end-8 p-3 rounded-lg">
-										<div class="flex flex-row items-center">
-											<div class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">A</div>
-											<div class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">
-												<div class="flex flex-row items-center">
-													<button class="flex items-center justify-center bg-indigo-600 hover:bg-indigo-800 rounded-full h-8 w-10">
-														<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-														</svg>
-													</button>
-													<div class="flex flex-row items-center space-x-px ml-4">
-														<div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-4 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-10 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-10 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-12 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-10 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-6 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-5 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-4 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-3 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-10 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-10 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-1 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-1 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-														<div class="h-4 w-1 bg-gray-500 rounded-lg"></div>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div> -->
 								</div>
 							</div>
 						</div>
@@ -148,6 +98,14 @@ export default {
 		return {
 			searchQuery: "",
 			users: [
+				{ name: "Mohammed", isActive: true, image: "M" },
+				{ name: "Tze Byng", isActive: true, image: "B" },
+				{ name: "Ghassan Ghassan", isActive: true, image: "G" },
+				{ name: "Cristina", isActive: true, image: "C" },
+				{ name: "Mohammed", isActive: true, image: "M" },
+				{ name: "Tze Byng", isActive: true, image: "B" },
+				{ name: "Ghassan Ghassan", isActive: true, image: "G" },
+				{ name: "Cristina", isActive: true, image: "C" },
 				{ name: "Mohammed", isActive: true, image: "M" },
 				{ name: "Tze Byng", isActive: true, image: "B" },
 				{ name: "Ghassan Ghassan", isActive: true, image: "G" },
