@@ -55,6 +55,12 @@
 								</div>
 							</div>
 						</div>
+						<div class="flex justify-end">
+							<div v-for="response in suggestedResponse" :key="response">
+								<button class="border border-gray-200 bg-white hover:bg-indigo-500 rounded-lg py-1 px-2 ml-2 mb-2 hover:text-white">{{ response.response }}</button>
+							</div>
+						</div>
+
 						<div class="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
 							<div>
 								<button class="flex items-center justify-center text-gray-400 hover:text-gray-600">
@@ -100,14 +106,6 @@ export default {
 				{ name: "Tze Byng", isActive: true, image: "B" },
 				{ name: "Ghassan Ghassan", isActive: true, image: "G" },
 				{ name: "Cristina", isActive: true, image: "C" },
-				{ name: "Mohammed", isActive: true, image: "M" },
-				{ name: "Tze Byng", isActive: true, image: "B" },
-				{ name: "Ghassan Ghassan", isActive: true, image: "G" },
-				{ name: "Cristina", isActive: true, image: "C" },
-				{ name: "Mohammed", isActive: true, image: "M" },
-				{ name: "Tze Byng", isActive: true, image: "B" },
-				{ name: "Ghassan Ghassan", isActive: true, image: "G" },
-				{ name: "Cristina", isActive: true, image: "C" },
 			],
 			chats: [
 				{ from: "agent", content: "Hello" },
@@ -116,6 +114,7 @@ export default {
 				{ from: "agent", content: "How can I help you?" },
 				{ from: "client", content: "My laptop does not work" },
 			],
+			suggestedResponse: [{ response: "You can try shutdown the laptop or restart it." }, { response: "Try to contac us." }],
 		};
 	},
 	methods: {
