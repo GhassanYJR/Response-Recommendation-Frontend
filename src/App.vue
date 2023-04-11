@@ -170,7 +170,7 @@ export default {
 		},
 	},
 	mounted() {
-		const API_BASE = "http://127.0.0.1:5000/suggest";
+		const API_BASE = "http://193.168.10.183:5000/suggest";
 		if (this.chats[this.chats.length - 1].from === "client") {
 			const requestOptions = {
 				method: "POST",
