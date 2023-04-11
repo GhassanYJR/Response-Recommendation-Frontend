@@ -132,8 +132,8 @@ export default {
 				{ from: "client", content: "How can I check my order?" },
 			],
 			suggestedResponse: [
-				{ response: "You can try shutdown the laptop or restart it.", isClicked: false },
-				{ response: "Try to contact us.", isClicked: false },
+				// { response: "You can try shutdown the laptop or restart it.", isClicked: false },
+				// { response: "Try to contact us.", isClicked: false },
 			],
 			newMessage: "",
 			canPush: true,
@@ -146,7 +146,6 @@ export default {
 		},
 		copyText(button) {
 			const buttonText = button.textContent;
-			console.log(buttonText);
 			this.$refs.textbox.value = buttonText;
 			this.newMessage = buttonText;
 		},
@@ -185,8 +184,10 @@ export default {
 					}
 					return r.json();
 				})
-				.then((d) => console.log(d))
+				.then((d) => this.suggestedResponse.push({ response: d.suggestion, isClicked: false }))
 				.catch((error) => console.error(error));
+
+			// { response: "You can try shutdown the laptop or restart it.", isClicked: false }
 		}
 	},
 };
