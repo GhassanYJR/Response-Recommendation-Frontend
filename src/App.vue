@@ -2,7 +2,7 @@
 	<main>
 		<div class="flex h-full antialiased text-gray-800">
 			<div class="flex flex-row h-screen w-full overflow-hidden">
-				<div class="flex flex-col p-3 w-64 h-full bg-white flex-shrink-0">
+				<div class="hidden sm:flex flex-col p-3 w-64 h-full bg-white flex-shrink-0">
 					<div class="flex flex-row items-center justify-left h-12 w-full">
 						<div class="font-bold text-2xl text-left">Chats</div>
 					</div>
@@ -55,43 +55,55 @@
 								</div>
 							</div>
 						</div>
-						<div class="flex justify-end" v-if="lastFrom === 'client'">
-							<div v-for="response in suggestedResponse" :key="response">
-								<button class="border border-gray-200 bg-white hover:bg-indigo-500 rounded-lg py-1 px-2 ml-2 mb-2 hover:text-white outline-none" @click="copyText($event.target)">
-									{{ response.response }}
-								</button>
-							</div>
-						</div>
 
-						<div class="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
-							<div>
-								<button class="flex items-center justify-center text-gray-400 hover:text-gray-600">
-									<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-									</svg>
-								</button>
+						<div class="rounded-xl bg-white w-full px-3 py-2 transition" :class="{ 'h-16': isReplied, 'h-auto grid grid-rows-2 gap-2': !isReplied }">
+							<div v-if="!isReplied" class="col-span-1 flex justify-end">
+								<div class="flex" v-if="lastFrom === 'client'">
+									<div v-for="response in suggestedResponse" :key="response" class="mr-1 h-full flex items-center">
+										<button class="transition bg-indigo-500 hover:text-indigo-500 hover:bg-transparent rounded-lg py-1 px-2 text-sm text-white outline-none" @click="copyText($event.target)">
+											{{ response.response }}
+										</button>
+									</div>
+								</div>
 							</div>
-							<div class="flex-grow ml-4">
-								<div class="relative w-full">
-									<input type="text" class="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10 bg-gray-100" ref="textbox" v-model="newMessage" />
-									<button class="absolute flex items-center justify-center h-full w-12 right-0 top-0 text-gray-400 hover:text-gray-600">
-										<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+							<div class="flex flex-row h-full items-center">
+								<div>
+									<button class="flex items-center justify-center text-gray-400 hover:text-gray-600">
+										<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
 										</svg>
 									</button>
 								</div>
-							</div>
-							<div class="ml-4">
-								<form @submit.prevent="addMessage">
-									<button class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white px-4 py-1 flex-shrink-0" type="submit">
-										<span>Send</span>
-										<span class="ml-2">
-											<svg class="w-4 h-4 transform rotate-45 -mt-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+								<div class="flex-grow ml-4">
+									<div class="relative w-full">
+										<input
+											type="text"
+											class="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 px-3 h-10 bg-gray-100 truncate"
+											ref="textbox"
+											id="textbox"
+											v-model="newMessage"
+											@click="handle({ type: 'prompt', value: true })"
+											v-on:blur="handle({ type: 'prompt', value: false })"
+										/>
+										<!-- <button class="absolute flex items-center justify-center h-full w-12 right-0 top-0 text-gray-400 hover:text-gray-600">
+											<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 											</svg>
-										</span>
-									</button>
-								</form>
+										</button> -->
+									</div>
+								</div>
+								<div class="ml-4">
+									<form @submit.prevent="addMessage">
+										<button class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white px-4 py-1 flex-shrink-0" type="submit">
+											<span>Send</span>
+											<span class="ml-2">
+												<svg class="w-4 h-4 transform rotate-45 -mt-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+												</svg>
+											</span>
+										</button>
+									</form>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -104,6 +116,7 @@
 export default {
 	data() {
 		return {
+			isReplied: false,
 			searchQuery: "",
 			users: [
 				{ name: "Mohammed", isActive: true, image: "M" },
@@ -127,11 +140,13 @@ export default {
 		};
 	},
 	methods: {
+		handle(e) {},
 		searchUsers(query) {
 			return this.users.filter((user) => user.name.toLowerCase().includes(query.toLowerCase()));
 		},
 		copyText(button) {
 			const buttonText = button.textContent;
+			console.log(buttonText);
 			this.$refs.textbox.value = buttonText;
 			this.newMessage = buttonText;
 		},
@@ -140,6 +155,7 @@ export default {
 				this.chats.push({ from: "agent", content: this.newMessage });
 				this.newMessage = "";
 				this.canPush = true;
+				this.isReplied = !this.isReplied;
 			}
 		},
 	},
@@ -153,6 +169,25 @@ export default {
 		lastFrom() {
 			return this.chats[this.chats.length - 1].from;
 		},
+	},
+	mounted() {
+		const API_BASE = "http://127.0.0.1:5000/";
+		if (this.chats[this.chats.length - 1].from === "client") {
+			const requestOptions = {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ question: this.chats[this.chats.length - 1].content }),
+			};
+			fetch(API_BASE, requestOptions)
+				.then((r) => {
+					if (!r.ok) {
+						throw Error(r.statusText);
+					}
+					return r.json();
+				})
+				.then((d) => console.log(d))
+				.catch((error) => console.error(error));
+		}
 	},
 };
 </script>
