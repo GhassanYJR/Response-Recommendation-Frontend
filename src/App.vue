@@ -129,7 +129,7 @@ export default {
 				{ from: "client", content: "How are you?" },
 				{ from: "agent", content: "I'm fine" },
 				{ from: "agent", content: "How can I help you?" },
-				{ from: "client", content: "My laptop does not work" },
+				{ from: "client", content: "How can I check my order?" },
 			],
 			suggestedResponse: [
 				{ response: "You can try shutdown the laptop or restart it.", isClicked: false },
@@ -171,7 +171,7 @@ export default {
 		},
 	},
 	mounted() {
-		const API_BASE = "http://127.0.0.1:5000/";
+		const API_BASE = "http://127.0.0.1:5000/suggest";
 		if (this.chats[this.chats.length - 1].from === "client") {
 			const requestOptions = {
 				method: "POST",
