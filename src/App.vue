@@ -184,7 +184,7 @@ export default {
 					}
 					return r.json();
 				})
-				.then((d) => d.suggestion.forEach((i) => this.suggestedResponse.push({ response: i, isClicked: false })))
+				.then((d) => Array.from(d.suggestion).forEach((i) => this.suggestedResponse.push({ response: i, isClicked: false })))
 				.catch((error) => console.error(error));
 
 			// { response: "You can try shutdown the laptop or restart it.", isClicked: false }
