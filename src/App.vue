@@ -131,7 +131,8 @@
 						<input required type="text" v-model="newLabel" class="text-center h-[50px] outline-none active:outline-none bg-transparent border-b border-gray-400 col-span-2" />
 					</div>
 				</div>
-				<div class="mt-10 flex justify-end w-full">
+				<div class="mt-10 flex justify-end w-full gap-2">
+					<button class="p-2 px-4 text-indigo-600 rounded-lg font-bold border border-indigo-600 hover:bg-red-200 hover:text-red-600 hover:border-transparent transition" @click.prevent="cancelSubmit">Cancel</button>
 					<button class="p-2 px-4 text-white rounded-lg font-bold bg-indigo-600" type="submit">Submit</button>
 				</div>
 			</form>
@@ -168,6 +169,7 @@ export default {
 			showModal: false,
 			selectedLabel: null,
 			newLabel: null,
+			isModalCancelled: false,
 		};
 	},
 	methods: {
@@ -188,6 +190,7 @@ export default {
 		// 	return true;
 		// },
 		async addMessage() {
+			this.isModalCancelled = false;
 			if (this.newMessage.length === 0) return;
 			if (this.canPush) {
 				let question = this.chats[this.chats.length - 1].content;
@@ -204,22 +207,21 @@ export default {
 						await new Promise((resolve) => setTimeout(resolve, 100)); // wait for 100 milliseconds before checking again
 					}
 
-					console.log(this.selectedLabel === "Others");
-
 					if (this.selectedLabel === "Others") this.latestLabel = -10;
 					else this.latestLabel = Array.from(this.labels).indexOf(this.selectedLabel);
 
 					if (this.latestLabel === -10) this.newLabel = this.newLabel.replace(" ", "_").toLowerCase();
 					else this.newLabel = "";
-					console.log({ question: question, response: response, label_id: this.latestLabel, label_name: this.newLabel });
 
-					this.postFeedback(question, response, this.latestLabel, this.newLabel);
+					if (!this.isModalCancelled) this.postFeedback(question, response, this.latestLabel, this.newLabel);
 				}
-				this.chats.push({ from: "agent", content: this.newMessage });
-				this.newMessage = "";
-				this.canPush = true;
-				this.isReplied = !this.isReplied;
-				this.suggestedResponse = [];
+				if (!this.isModalCancelled) {
+					this.chats.push({ from: "agent", content: this.newMessage });
+					this.newMessage = "";
+					this.canPush = true;
+					this.isReplied = !this.isReplied;
+					this.suggestedResponse = [];
+				}
 			}
 		},
 		async postFeedback(q, r, l, nl = "") {
@@ -251,6 +253,10 @@ export default {
 		},
 		submitLabel() {
 			this.showModal = !this.showModal;
+		},
+		cancelSubmit() {
+			this.showModal = false;
+			this.isModalCancelled = true;
 		},
 	},
 	computed: {
