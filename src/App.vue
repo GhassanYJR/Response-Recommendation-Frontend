@@ -188,6 +188,7 @@ export default {
 		// 	return true;
 		// },
 		async addMessage() {
+			if (this.newMessage.length === 0) return;
 			if (this.canPush) {
 				let question = this.chats[this.chats.length - 1].content;
 				let response = this.newMessage;
