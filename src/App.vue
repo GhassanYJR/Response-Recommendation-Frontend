@@ -170,7 +170,7 @@ export default {
 		},
 	},
 	mounted() {
-		const API_BASE = "http://193.168.10.183:5000/suggest";
+		const API_BASE = "http://127.0.0.1:5000/suggest";
 		if (this.chats[this.chats.length - 1].from === "client") {
 			const requestOptions = {
 				method: "POST",
@@ -184,7 +184,12 @@ export default {
 					}
 					return r.json();
 				})
-				.then((d) => Array.from(d.suggestion).forEach((i) => this.suggestedResponse.push({ response: i, isClicked: false })))
+				.then((d) => {
+					console.log(d);
+					Array.from(d.suggestion).forEach((i) => {
+						if (i !== "Not Found") this.suggestedResponse.push({ response: i, isClicked: false });
+					});
+				})
 				.catch((error) => console.error(error));
 
 			// { response: "You can try shutdown the laptop or restart it.", isClicked: false }
