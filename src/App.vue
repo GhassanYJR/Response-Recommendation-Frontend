@@ -206,9 +206,10 @@ export default {
 					console.log(this.selectedLabel === "Others");
 
 					if (this.selectedLabel === "Others") this.latestLabel = -10;
-					else this.latestLabel = Array.from(labels).indexOf(this.selectedLabel);
+					else this.latestLabel = Array.from(this.labels).indexOf(this.selectedLabel);
 
-					this.newLabel = this.newLabel.replace(" ", "_").toLowerCase();
+					if (this.latestLabel === -10) this.newLabel = this.newLabel.replace(" ", "_").toLowerCase();
+					else this.newLabel = "";
 					console.log({ question: question, response: response, label_id: this.latestLabel, label_name: this.newLabel });
 
 					this.postFeedback(question, response, this.latestLabel, this.newLabel);
@@ -225,8 +226,6 @@ export default {
 			// response: str
 			// label_id: int
 			// label_name: str
-
-			console.log(Number.isNaN(l));
 
 			const API_BASE = "http://127.0.0.1:5000/feedback";
 			const requestOptions = {
