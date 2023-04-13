@@ -18,7 +18,7 @@
 							/>
 						</div>
 					</div>
-					<div class="flex flex-col mt-6 overflow-x-hidden overflow-y-auto">
+					<div class="flex flex-col mt-6 overflow-x-hidden overflow-y-auto max-h-[300px]">
 						<div class="flex flex-row items-center justify-between text-xs">
 							<span class="font-bold">Active Conversations</span>
 							<span class="flex items-center justify-center bg-gray-300 h-4 w-4 rounded-full">{{ activeUserCount }}</span>
@@ -29,6 +29,9 @@
 								<div class="ml-2 text-sm font-semibold">{{ user.name }}</div>
 							</button>
 						</div>
+					</div>
+					<div class="w-full py-2 flex justify-center items-center cursor-pointer bg-indigo-500 text-white">
+						<p>Manage</p>
 					</div>
 				</div>
 				<div class="flex flex-col flex-auto h-full">
@@ -110,10 +113,36 @@
 				</div>
 			</div>
 		</div>
+		<modal v-if="showModal" title="Feedback">
+			<form @submit.prevent="submitLabel">
+				<div class="grid grid-cols-1 gap-2">
+					<div class="grid grid-cols-3">
+						<div class="flex justify-center items-center"><label for="labels">Select a label</label></div>
+
+						<select id="labels" v-model="selectedLabel" class="h-[50px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg cursor-pointer">
+							<option v-for="l in labels" :key="l">
+								{{ l }}
+							</option>
+						</select>
+					</div>
+					<div v-if="selectedLabel === 'Others'" class="grid grid-cols-3">
+						<div class="flex justify-center items-center"><label for="new_label">New label</label></div>
+
+						<input required type="text" v-model="newLabel" class="text-center h-[50px] outline-none active:outline-none bg-transparent border-b border-gray-400 col-span-2" />
+					</div>
+				</div>
+				<div class="mt-10 flex justify-end w-full">
+					<button class="p-2 px-4 text-white rounded-lg font-bold bg-indigo-600" type="submit">Submit</button>
+				</div>
+			</form>
+		</modal>
 	</main>
 </template>
 <script>
+import modal from "./components/modal.vue";
+
 export default {
+	components: { modal },
 	data() {
 		return {
 			isReplied: false,
@@ -131,12 +160,14 @@ export default {
 				{ from: "agent", content: "How can I help you?" },
 				{ from: "client", content: "How can I check my order?" },
 			],
-			suggestedResponse: [
-				// { response: "You can try shutdown the laptop or restart it.", isClicked: false },
-				// { response: "Try to contact us.", isClicked: false },
-			],
+			suggestedResponse: [],
+			labels: [],
 			newMessage: "",
 			canPush: true,
+			latestLabel: null,
+			showModal: false,
+			selectedLabel: null,
+			newLabel: null,
 		};
 	},
 	methods: {
@@ -149,13 +180,77 @@ export default {
 			this.$refs.textbox.value = buttonText;
 			this.newMessage = buttonText;
 		},
-		addMessage() {
+		// async waitForFalse(variable) {
+		// 	while (variable) {
+		// 		console.log(variable);
+		// 		await new Promise((resolve) => setTimeout(resolve, 100)); // wait for 100 milliseconds before checking again
+		// 	}
+		// 	return true;
+		// },
+		async addMessage() {
 			if (this.canPush) {
+				let question = this.chats[this.chats.length - 1].content;
+				let response = this.newMessage;
+				let suggestedResponses = this.suggestedResponse.map((d) => d.response);
+
+				// Validate which action to take
+				if (suggestedResponses.includes(response)) {
+					this.postFeedback(question, response, this.latestLabel);
+				} else {
+					this.showModal = !this.showModal;
+
+					while (this.showModal) {
+						await new Promise((resolve) => setTimeout(resolve, 100)); // wait for 100 milliseconds before checking again
+					}
+
+					console.log(this.selectedLabel === "Others");
+
+					if (this.selectedLabel === "Others") this.latestLabel = -10;
+					else this.latestLabel = Array.from(labels).indexOf(this.selectedLabel);
+
+					this.newLabel = this.newLabel.replace(" ", "_").toLowerCase();
+					console.log({ question: question, response: response, label_id: this.latestLabel, label_name: this.newLabel });
+
+					this.postFeedback(question, response, this.latestLabel, this.newLabel);
+				}
 				this.chats.push({ from: "agent", content: this.newMessage });
 				this.newMessage = "";
 				this.canPush = true;
 				this.isReplied = !this.isReplied;
+				this.suggestedResponse = [];
 			}
+		},
+		async postFeedback(q, r, l, nl = "") {
+			// question: str
+			// response: str
+			// label_id: int
+			// label_name: str
+
+			console.log(Number.isNaN(l));
+
+			const API_BASE = "http://127.0.0.1:5000/feedback";
+			const requestOptions = {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ question: q, response: r, label_id: l, label_name: nl }),
+			};
+			fetch(API_BASE, requestOptions)
+				.then((r) => {
+					if (!r.ok) {
+						throw Error(r.statusText);
+					}
+					return r.json();
+				})
+				.then((d) => {
+					this.labels = [];
+					console.log(d);
+				})
+				.catch((error) => console.error(error));
+			this.selectedLabel = null;
+			this.newLabel = null;
+		},
+		submitLabel() {
+			this.showModal = !this.showModal;
 		},
 	},
 	computed: {
@@ -185,10 +280,16 @@ export default {
 					return r.json();
 				})
 				.then((d) => {
-					console.log(d);
-					Array.from(d.suggestion).forEach((i) => {
-						if (i !== "Not Found") this.suggestedResponse.push({ response: i, isClicked: false });
-					});
+					this.labels = Array.from(d.labels).map((l) =>
+						l
+							.replace("_", " ")
+							.split(" ")
+							.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+							.join(" ")
+					);
+					this.labels.push("Others");
+					Array.from(d.suggestion.response).forEach((i) => this.suggestedResponse.push({ response: i, isClicked: false }));
+					this.latestLabel = d.suggestion.label;
 				})
 				.catch((error) => console.error(error));
 
