@@ -1,6 +1,6 @@
 <template>
 	<main>
-		<div class="flex h-full antialiased text-gray-800">
+		<div v-if="!isManagePageClicked" class="flex h-full antialiased text-gray-800">
 			<div class="flex flex-row h-screen w-full overflow-hidden">
 				<div class="hidden sm:flex flex-col p-3 w-64 h-full bg-white flex-shrink-0">
 					<div class="flex flex-row items-center justify-left h-12 w-full">
@@ -30,8 +30,10 @@
 							</button>
 						</div>
 					</div>
-					<div class="w-full py-2 flex justify-center items-center cursor-pointer bg-indigo-500 text-white">
-						<p>Manage</p>
+					<div @click.prevent="isManagePageClicked = true">
+						<div class="w-full py-2 flex justify-center items-center cursor-pointer bg-indigo-500 text-white">
+							<router-link :to="{ name: 'Manage' }" @click.prevent="isManagePageClicked = true">Manage</router-link>
+						</div>
 					</div>
 				</div>
 				<div class="flex flex-col flex-auto h-full">
@@ -113,6 +115,9 @@
 				</div>
 			</div>
 		</div>
+		<div v-else>
+			<router-view />
+		</div>
 		<modal v-if="showModal" title="Feedback">
 			<form @submit.prevent="submitLabel">
 				<div class="grid grid-cols-1 gap-2">
@@ -147,6 +152,7 @@ export default {
 	data() {
 		return {
 			isReplied: false,
+			isManagePageClicked: false,
 			searchQuery: "",
 			users: [
 				{ name: "Mohammed", isActive: true, image: "M" },
