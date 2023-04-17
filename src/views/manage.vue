@@ -85,7 +85,11 @@
 						<div class="flex justify-left items-center px-3"><label for="labels">Response</label></div>
 						<input type="text" class="h-[50px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg" v-model="response" />
 						<div class="flex justify-left items-center px-3"><label for="labels">Select a label</label></div>
-						<select id="labels" v-model="selectedLabel" class="h-[50px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg cursor-pointer"></select>
+						<select id="labels" v-model="selectedLabel" class="h-[50px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg cursor-pointer">
+							<option v-for="l in labels" :key="l">
+								{{ l }}
+							</option>
+						</select>
 					</div>
 					<div v-if="selectedLabel === 'Others'" class="grid grid-cols-3">
 						<div class="flex justify-center items-center"><label for="new_label">New label</label></div>
@@ -112,13 +116,15 @@ export default {
 			isModalCancelled: false,
 			modalTitle: "",
 			searchQuery: "",
-			result: [],
+			labels: [],
+			pending_data: [],
 			selectedRow: null,
 			rowNumber: null,
 			mode: "",
 			question: "",
 			response: "",
-			label: "2",
+			selectedLabel: null,
+			newLabel: null,
 		};
 	},
 	methods: {
@@ -150,9 +156,15 @@ export default {
 		},
 		async handlePost(mode) {
 			if (mode === "a") {
+				if (this.selectedLabel === "Others") this.latestLabel = -10;
+				else this.latestLabel = Array.from(this.labels).indexOf(this.selectedLabel);
+
+				if (this.latestLabel === -10) this.newLabel = this.newLabel.replace(" ", "_").toLowerCase();
+				else this.newLabel = "";
+
 				const data = {
 					mode: mode,
-					data: [this.question, this.response, this.label],
+					data: [this.question, this.response, this.latestLabel, this.newLabel],
 				};
 				try {
 					const response = await fetch("http://127.0.0.1:5000/pending_data/update", {
@@ -190,12 +202,16 @@ export default {
 					console.error(error);
 				}
 			}
+			this.selectedLabel = null;
+			this.newLabel = null;
+			this.question = null;
+			this.response = null;
 		},
 	},
 	computed: {
 		filteredTableData() {
-			return this.result.filter((result) => {
-				if (result.label !== undefined && result.label.toString().includes(this.searchQuery)) {
+			return this.pending_data.filter((pending_data) => {
+				if (pending_data.label !== undefined && pending_data.label.toString().includes(this.searchQuery)) {
 					return true;
 				}
 				return false;
@@ -211,14 +227,24 @@ export default {
 		fetch(API_BASE, requestOptions)
 			.then((response) => response.json())
 			.then((data) => {
-				const jsonData = data.map((row) => {
+				this.labels = Array.from(data.labels_data).map((l) =>
+					l
+						.replace("_", " ")
+						.split(" ")
+						.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+						.join(" ")
+				);
+				this.labels.push("Others");
+				console.log(this.labels);
+				const jsonPenddingData = data.pending_data.map((row) => {
 					return {
 						question: row[0],
 						response: row[1],
 						label: row[2],
 					};
 				});
-				this.result = jsonData;
+				this.pending_data = jsonPenddingData;
+				console.log(this.pending_data);
 			})
 			.catch((error) => {
 				console.error(error);
