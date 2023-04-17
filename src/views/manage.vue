@@ -58,15 +58,15 @@
 									</tr>
 								</thead>
 								<tbody>
-									<tr v-for="(data, index) in filteredTableData" :key="data.question" @click="getRowDetails(index)">
+									<tr v-for="data in filteredTableData" :key="data.question">
 										<td class="border-b border-white whitespace-nowrap py-4 pl-4 pr-3 text-left text-sm font-medium text-gray-500 sm:pl-6 lg:pl-8">{{ data.question }}</td>
 										<td class="border-b border-white whitespace-nowrap hidden px-3 py-4 text-left text-sm text-gray-500 sm:table-cell">{{ data.response }}</td>
 										<td class="border-b border-white whitespace-nowrap hidden px-3 py-4 text-left text-sm text-gray-500 lg:table-cell">{{ data.label }}</td>
 										<td class="border-b border-white relative whitespace-nowrap py-4 pr-4 pl-3 text-center text-sm font-medium sm:pr-8 lg:pr-8">
-											<button class="text-indigo-600 hover:text-indigo-900" @click.prevent="handlePost('d')">Delete</button>
+											<button class="text-indigo-600 hover:text-indigo-900" @click.prevent="handlePost('d', [data.question, data.response, data.label])">Delete</button>
 										</td>
 										<td class="border-b border-white relative whitespace-nowrap py-4 pr-4 pl-3 text-center text-sm font-medium sm:pr-8 lg:pr-8">
-											<button @click.prevent="showEditModal" class="text-indigo-600 hover:text-indigo-900">Edit</button>
+											<button @click.prevent="showEditModal([data.question, data.response, data.label])" class="text-indigo-600 hover:text-indigo-900">Edit</button>
 										</td>
 									</tr>
 								</tbody>
@@ -125,13 +125,18 @@ export default {
 			response: "",
 			selectedLabel: null,
 			newLabel: null,
+			originalData: null,
 		};
 	},
 	methods: {
-		showEditModal() {
+		showEditModal(d) {
 			this.showModal = !this.showModal;
 			this.modalTitle = "Edit Details";
 			this.mode = "m";
+			this.question = d[0];
+			this.response = d[1];
+			this.selectedLabel = this.labels[d[2]];
+			this.originalData = d;
 		},
 		showAddModal() {
 			this.showModal = !this.showModal;
@@ -148,13 +153,7 @@ export default {
 		goBack() {
 			this.$router.go(-1);
 		},
-		getRowDetails(index) {
-			this.rowNumber = index;
-			this.selectedRow = this.result[index];
-			console.log(this.selectedRow);
-			console.log(this.rowNumber);
-		},
-		async handlePost(mode) {
+		async handlePost(mode, d = null) {
 			if (mode === "a") {
 				if (this.selectedLabel === "Others") this.latestLabel = -10;
 				else this.latestLabel = Array.from(this.labels).indexOf(this.selectedLabel);
@@ -181,10 +180,33 @@ export default {
 				} catch (error) {
 					console.error(error);
 				}
-			} else {
+			} else if (mode === "d") {
 				const data = {
 					mode: mode,
-					data: [this.rowNumber, this.question, this.response, this.label],
+					data: d,
+				};
+				try {
+					const response = await fetch("http://127.0.0.1:5000/pending_data/update", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify(data),
+					});
+
+					const responseData = await response.json();
+
+					console.log(responseData);
+				} catch (error) {
+					console.error(error);
+				}
+			} else if (mode === "m") {
+				if (!this.newLabel) this.newLabel = "";
+				let tempLabel = this.labels.indexOf(this.selectedLabel);
+				this.selectedLabel = tempLabel == this.labels.length - 1 ? -10 : tempLabel;
+				const data = {
+					mode: mode,
+					data: [this.question, this.response, this.selectedLabel, this.newLabel, this.originalData],
 				};
 				try {
 					const response = await fetch("http://127.0.0.1:5000/pending_data/update", {
@@ -206,6 +228,9 @@ export default {
 			this.newLabel = null;
 			this.question = null;
 			this.response = null;
+			this.originalData = null;
+
+			this.showModal = false;
 		},
 	},
 	computed: {
@@ -236,14 +261,14 @@ export default {
 				);
 				this.labels.push("Others");
 				console.log(this.labels);
-				const jsonPenddingData = data.pending_data.map((row) => {
+				const jsonPendingData = data.pending_data.map((row) => {
 					return {
 						question: row[0],
 						response: row[1],
 						label: row[2],
 					};
 				});
-				this.pending_data = jsonPenddingData;
+				this.pending_data = jsonPendingData;
 				console.log(this.pending_data);
 			})
 			.catch((error) => {
