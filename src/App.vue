@@ -236,7 +236,7 @@ export default {
 			// label_id: int
 			// label_name: str
 
-			const API_BASE = "http://127.0.0.1:5000/feedback";
+			const API_BASE = "http://193.168.10.183:5000/feedback";
 			const requestOptions = {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -277,7 +277,7 @@ export default {
 		},
 	},
 	mounted() {
-		const API_BASE = "http://127.0.0.1:5000/suggest";
+		const API_BASE = "http://193.168.10.183:5000/suggest";
 		if (this.chats[this.chats.length - 1].from === "client") {
 			const requestOptions = {
 				method: "POST",
