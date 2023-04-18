@@ -1,6 +1,6 @@
 <template>
 	<main>
-		<div v-if="!isManagePageClicked" class="flex h-full antialiased text-gray-800">
+		<div v-if="!isPageClicked" class="flex h-full antialiased text-gray-800">
 			<div class="flex flex-row h-screen w-full overflow-hidden">
 				<div class="hidden sm:flex flex-col p-3 w-64 h-full bg-white flex-shrink-0">
 					<div class="flex flex-row items-center justify-left h-12 w-full">
@@ -30,10 +30,11 @@
 							</button>
 						</div>
 					</div>
-					<div @click.prevent="isManagePageClicked = true">
-						<div class="w-full py-2 flex justify-center items-center cursor-pointer bg-indigo-500 text-white">
-							<router-link :to="{ name: 'Manage' }" @click.prevent="isManagePageClicked = true">Manage</router-link>
-						</div>
+					<div @click.prevent="navigateToNext('manage')" class="w-full py-2 flex justify-center items-center cursor-pointer bg-indigo-500 text-white">
+						<p>Manage</p>
+					</div>
+					<div @click.prevent="navigateToNext('context')" class="w-full py-2 flex justify-center items-center cursor-pointer bg-indigo-500 text-white mt-3">
+						<p>Add Context</p>
 					</div>
 				</div>
 				<div class="flex flex-col flex-auto h-full">
@@ -152,7 +153,7 @@ export default {
 	data() {
 		return {
 			isReplied: false,
-			isManagePageClicked: false,
+			isPageClicked: false,
 			searchQuery: "",
 			users: [
 				{ name: "Mohammed", isActive: true, image: "M" },
@@ -179,6 +180,16 @@ export default {
 		};
 	},
 	methods: {
+		navigateToNext(page) {
+			if (page === "manage") {
+				this.$router.push("/manage");
+				this.isPageClicked = !this.isPageClicked;
+			} else if (page === "context") {
+				this.isPageClicked = !this.isPageClicked;
+				this.$router.push("/context");
+			}
+		},
+
 		handle(e) {},
 		searchUsers(query) {
 			return this.users.filter((user) => user.name.toLowerCase().includes(query.toLowerCase()));
@@ -251,7 +262,6 @@ export default {
 				})
 				.then((d) => {
 					this.labels = [];
-					console.log(d);
 				})
 				.catch((error) => console.error(error));
 			this.selectedLabel = null;

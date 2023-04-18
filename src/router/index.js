@@ -1,6 +1,7 @@
 import { createWebHistory, createRouter } from "vue-router";
 import App from "@/App.vue";
 import Manage from "@/views/manage.vue";
+import Context from "@/views/context.vue";
 
 const routes = [
 	{
@@ -12,6 +13,11 @@ const routes = [
 		path: "/manage",
 		name: "Manage",
 		component: Manage,
+	},
+	{
+		path: "/context",
+		name: "Context",
+		component: Context,
 	},
 ];
 

@@ -16,7 +16,7 @@
 				</g>
 			</svg>
 		</button>
-		<div class="text-white">Manage Pending Data</div>
+		<div class="text-white">Add Context Data</div>
 	</header>
 	<main>
 		<div class="bg-white">
@@ -29,7 +29,7 @@
 							name="label"
 							id="label"
 							class="block w-full rounded-md border-0 py-2 bg-white text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 outline-none pl-3"
-							placeholder="Search Question"
+							placeholder="Search Context"
 						/>
 						<button
 							@click.prevent="showAddModal"
@@ -46,9 +46,8 @@
 							<table class="min-w-full border-separate border-spacing-0">
 								<thead>
 									<tr>
-										<th scope="col" class="sticky top-0 z-10 border-b border-white py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 lg:pl-8">Question</th>
-										<th scope="col" class="sticky top-0 z-10 hidden border-b border-white px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">Response</th>
-										<th scope="col" class="sticky top-0 z-10 hidden border-b border-white px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell">Label</th>
+										<th scope="col" class="sticky top-0 z-10 border-b border-white py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 lg:pl-8">Context</th>
+										<th scope="col" class="sticky top-0 z-10 hidden border-b border-white px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell">Default Label</th>
 										<th scope="col" class="sticky top-0 z-10 border-b border-white py-3.5 pl-3 pr-4 sm:pr-6 lg:pr-8">
 											<span class="sr-only">Delete</span>
 										</th>
@@ -59,14 +58,13 @@
 								</thead>
 								<tbody>
 									<tr v-for="data in filteredTableData" :key="data.question">
-										<td class="border-b border-white whitespace-nowrap py-4 pl-4 pr-3 text-left text-sm font-medium text-gray-500 sm:pl-6 lg:pl-8">{{ data.question }}</td>
-										<td class="border-b border-white whitespace-nowrap hidden px-3 py-4 text-left text-sm text-gray-500 sm:table-cell">{{ data.response }}</td>
-										<td class="border-b border-white whitespace-nowrap hidden px-3 py-4 text-left text-sm text-gray-500 lg:table-cell">{{ getLabelName(data.label) }}</td>
+										<td class="border-b border-white whitespace-nowrap py-4 pl-4 pr-3 text-left text-sm font-medium text-gray-500 sm:pl-6 lg:pl-8">{{ data.contextContent }}</td>
+										<td class="border-b border-white whitespace-nowrap hidden px-3 py-4 text-left text-sm text-gray-500 sm:table-cell">{{ getLabelName(data.label) }}</td>
 										<td class="border-b border-white relative whitespace-nowrap py-4 pr-4 pl-3 text-center text-sm font-medium sm:pr-8 lg:pr-8">
-											<button class="text-indigo-600 hover:text-indigo-900" @click.prevent="handlePost('d', [data.question, data.response, data.label])">Delete</button>
+											<button class="text-indigo-600 hover:text-indigo-900" @click.prevent="handlePost('d', [data.contextContent, data.label])">Delete</button>
 										</td>
 										<td class="border-b border-white relative whitespace-nowrap py-4 pr-4 pl-3 text-center text-sm font-medium sm:pr-8 lg:pr-8">
-											<button @click.prevent="showEditModal([data.question, data.response, data.label])" class="text-indigo-600 hover:text-indigo-900">Edit</button>
+											<button @click.prevent="showEditModal([data.contextContent, data.label])" class="text-indigo-600 hover:text-indigo-900">Edit</button>
 										</td>
 									</tr>
 								</tbody>
@@ -80,10 +78,8 @@
 			<form @submit.prevent="submitLabel">
 				<div class="grid grid-cols-1 gap-2">
 					<div class="grid grid-cols-3 space-y-3">
-						<div class="flex justify-left items-center px-3"><label for="labels">Question</label></div>
-						<input type="text" class="h-[50px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg" v-model="question" />
-						<div class="flex justify-left items-center px-3"><label for="labels">Response</label></div>
-						<input type="text" class="h-[50px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg" v-model="response" />
+						<div class="flex justify-left items-center px-3"><label for="labels">Context</label></div>
+						<textarea type="text" class="h-[150px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg" v-model="contextContent"></textarea>
 						<div class="flex justify-left items-center px-3"><label for="labels">Select a label</label></div>
 						<select id="labels" v-model="selectedLabel" class="h-[50px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg cursor-pointer">
 							<option v-for="l in labels" :key="l">
@@ -108,35 +104,30 @@
 <script>
 import modal from "../components/modal.vue";
 export default {
-	name: "Manage",
 	components: { modal },
+	name: "Context",
 	data() {
 		return {
 			showModal: false,
 			isModalCancelled: false,
+			contextContent: null,
 			modalTitle: "",
 			searchQuery: "",
-			labels: [],
-			pending_data: [],
-			mode: "",
-			question: "",
-			response: "",
+			originalData: null,
+			contextData: [],
 			selectedLabel: null,
 			newLabel: null,
-			originalData: null,
+			label: "",
+			labels: [],
 		};
 	},
 	methods: {
-		getLabelName(labelIndex) {
-			return this.labels[labelIndex];
-		},
 		showEditModal(d) {
 			this.showModal = !this.showModal;
 			this.modalTitle = "Edit Details";
 			this.mode = "m";
-			this.question = d[0];
-			this.response = d[1];
-			this.selectedLabel = this.labels[d[2]];
+			this.contextContent = d[0];
+			this.selectedLabel = this.labels[d[1]];
 			this.originalData = d;
 		},
 		showAddModal() {
@@ -147,11 +138,17 @@ export default {
 		cancelSubmit() {
 			this.showModal = false;
 			this.isModalCancelled = true;
+			this.selectedLabel = null;
+			this.newLabel = null;
+			this.contextContent = null;
 			this.mode = "";
 			this.modalTitle = "";
 		},
 		goBack() {
 			this.$router.go(-1);
+		},
+		getLabelName(labelIndex) {
+			return this.labels[labelIndex];
 		},
 		async handlePost(mode, d = null) {
 			if (mode === "a") {
@@ -163,19 +160,17 @@ export default {
 
 				const data = {
 					mode: mode,
-					data: [this.question, this.response, this.latestLabel, this.newLabel],
+					data: [this.contextContent, this.latestLabel, this.newLabel],
 				};
 				try {
-					const response = await fetch("http://127.0.0.1:5000/pending_data/update", {
+					const response = await fetch("http://127.0.0.1:5000/context_data/update", {
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json",
 						},
 						body: JSON.stringify(data),
 					});
-
 					const responseData = await response.json();
-
 					console.log(responseData);
 				} catch (error) {
 					console.error(error);
@@ -186,7 +181,7 @@ export default {
 					data: d,
 				};
 				try {
-					const response = await fetch("http://127.0.0.1:5000/pending_data/update", {
+					const response = await fetch("http://127.0.0.1:5000/context_data/update", {
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json",
@@ -206,10 +201,10 @@ export default {
 				this.selectedLabel = tempLabel == this.labels.length - 1 ? -10 : tempLabel;
 				const data = {
 					mode: mode,
-					data: [this.question, this.response, this.selectedLabel, this.newLabel, this.originalData],
+					data: [this.contextContent, this.selectedLabel, this.newLabel, this.originalData],
 				};
 				try {
-					const response = await fetch("http://127.0.0.1:5000/pending_data/update", {
+					const response = await fetch("http://127.0.0.1:5000/context_data/update", {
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json",
@@ -226,14 +221,13 @@ export default {
 			}
 			this.selectedLabel = null;
 			this.newLabel = null;
-			this.question = null;
-			this.response = null;
+			this.contextContent = null;
 			this.originalData = null;
 			this.showModal = false;
 			this.GetData();
 		},
 		GetData() {
-			const API_BASE = "http://127.0.0.1:5000/pending_data";
+			const API_BASE = "http://127.0.0.1:5000/context_data";
 			const requestOptions = {
 				method: "GET",
 				headers: { "Content-Type": "application/json" },
@@ -249,14 +243,13 @@ export default {
 							.join(" ")
 					);
 					this.labels.push("Others");
-					const jsonPendingData = data.pending_data.map((row) => {
+					const jsonContextData = data.context_data.map((row) => {
 						return {
-							question: row[0],
-							response: row[1],
-							label: row[2],
+							contextContent: row[0],
+							label: row[1],
 						};
 					});
-					this.pending_data = jsonPendingData;
+					this.contextData = jsonContextData;
 				})
 				.catch((error) => {
 					console.error(error);
@@ -265,8 +258,8 @@ export default {
 	},
 	computed: {
 		filteredTableData() {
-			return this.pending_data.filter((pending_data) => {
-				if (pending_data.question !== undefined && pending_data.question.toLowerCase().includes(this.searchQuery.toLowerCase())) {
+			return this.contextData.filter((contextData) => {
+				if (contextData.contextContent !== undefined && contextData.contextContent.toLowerCase().includes(this.searchQuery.toLowerCase())) {
 					return true;
 				}
 				return false;
