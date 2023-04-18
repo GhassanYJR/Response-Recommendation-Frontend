@@ -42,8 +42,8 @@
 				</div>
 				<div class="mt-8 flow-root bg-indigo-200 p-4 rounded-lg">
 					<div class="-mx-4 -my-2 sm:-mx-6 lg:-mx-8">
-						<div class="inline-block min-w-full py-2 align-middle">
-							<table class="min-w-full border-separate border-spacing-0">
+						<div class="w-full py-2 align-middle">
+							<table class="w-full border-separate border-spacing-0 table-fixed">
 								<thead>
 									<tr>
 										<th scope="col" class="sticky top-0 z-10 border-b border-white py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 lg:pl-8">Context</th>
@@ -58,7 +58,7 @@
 								</thead>
 								<tbody>
 									<tr v-for="data in filteredTableData" :key="data.question">
-										<td class="border-b border-white whitespace-nowrap py-4 pl-4 pr-3 text-left text-sm font-medium text-gray-500 sm:pl-6 lg:pl-8">{{ data.contextContent }}</td>
+										<td class="break-words text-justify border-b border-white py-4 pl-4 pr-3 text-left text-sm font-medium text-gray-500 sm:pl-6 lg:pl-8">{{ data.contextContent }}</td>
 										<td class="border-b border-white whitespace-nowrap hidden px-3 py-4 text-left text-sm text-gray-500 sm:table-cell">{{ getLabelName(data.label) }}</td>
 										<td class="border-b border-white relative whitespace-nowrap py-4 pr-4 pl-3 text-center text-sm font-medium sm:pr-8 lg:pr-8">
 											<button class="text-indigo-600 hover:text-indigo-900" @click.prevent="handlePost('d', [data.contextContent, data.label])">Delete</button>
