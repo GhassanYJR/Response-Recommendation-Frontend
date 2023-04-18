@@ -58,7 +58,7 @@
 								</thead>
 								<tbody>
 									<tr v-for="data in filteredTableData" :key="data.question">
-										<td class="break-words text-justify border-b border-white py-4 pl-4 pr-3 text-left text-sm font-medium text-gray-500 sm:pl-6 lg:pl-8">{{ data.contextContent }}</td>
+										<td class="break-words text-justify border-b border-white py-4 pl-4 pr-3 text-sm font-medium text-gray-500 sm:pl-6 lg:pl-8">{{ data.contextContent }}</td>
 										<td class="border-b border-white whitespace-nowrap hidden px-3 py-4 text-left text-sm text-gray-500 sm:table-cell">{{ getLabelName(data.label) }}</td>
 										<td class="border-b border-white relative whitespace-nowrap py-4 pr-4 pl-3 text-center text-sm font-medium sm:pr-8 lg:pr-8">
 											<button class="text-indigo-600 hover:text-indigo-900" @click.prevent="handlePost('d', [data.contextContent, data.label])">Delete</button>
