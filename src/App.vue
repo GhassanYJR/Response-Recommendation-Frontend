@@ -122,7 +122,7 @@
 		<modal v-if="showModal" title="Feedback">
 			<form @submit.prevent="submitLabel">
 				<div class="grid grid-cols-1 gap-2">
-					<div class="grid grid-cols-3">
+					<!-- <div class="grid grid-cols-3">
 						<div class="flex justify-center items-center"><label for="labels">Select a label</label></div>
 
 						<select id="labels" v-model="selectedLabel" class="h-[50px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg cursor-pointer">
@@ -130,11 +130,16 @@
 								{{ l }}
 							</option>
 						</select>
-					</div>
-					<div v-if="selectedLabel === 'Others'" class="grid grid-cols-3">
-						<div class="flex justify-center items-center"><label for="new_label">New label</label></div>
+					</div> -->
+					<div class="grid grid-cols-3">
+						<div class="flex justify-center items-center"><label for="new_label">New label name</label></div>
 
 						<input required type="text" v-model="newLabel" class="text-center h-[50px] outline-none active:outline-none bg-transparent border-b border-gray-400 col-span-2" />
+					</div>
+					<div class="grid grid-cols-3">
+						<div class="flex justify-center items-center"><label for="new_label">Keywords</label></div>
+
+						<input required type="text" v-model="keywords" class="text-center h-[50px] outline-none active:outline-none bg-transparent border-b border-gray-400 col-span-2" />
 					</div>
 				</div>
 				<div class="mt-10 flex justify-end w-full gap-2">
@@ -166,7 +171,7 @@ export default {
 				{ from: "client", content: "How are you?" },
 				{ from: "agent", content: "I'm fine" },
 				{ from: "agent", content: "How can I help you?" },
-				{ from: "client", content: "How can I check my order?" },
+				{ from: "client", content: "May he tracks the order?" },
 			],
 			suggestedResponse: [],
 			labels: [],
@@ -177,6 +182,8 @@ export default {
 			selectedLabel: null,
 			newLabel: null,
 			isModalCancelled: false,
+			vec_sentence: null,
+			keywords: "",
 		};
 	},
 	methods: {
@@ -218,19 +225,21 @@ export default {
 				if (suggestedResponses.includes(response)) {
 					this.postFeedback(question, response, this.latestLabel);
 				} else {
-					this.showModal = !this.showModal;
+					if (this.latestLabel === -1) {
+						this.getLatestVecClientMessage();
+						this.showModal = !this.showModal;
 
-					while (this.showModal) {
-						await new Promise((resolve) => setTimeout(resolve, 100)); // wait for 100 milliseconds before checking again
+						while (this.showModal) {
+							await new Promise((resolve) => setTimeout(resolve, 100)); // wait for 100 milliseconds before checking again
+						}
+
+						this.newLabel = this.newLabel.replace(" ", "_").toLowerCase();
+					} else this.newLabel = "";
+
+					if (!this.isModalCancelled) {
+						this.keywords = this.keywords.split(";");
+						this.postFeedback(question, response, this.latestLabel, this.newLabel, this.keywords);
 					}
-
-					if (this.selectedLabel === "Others") this.latestLabel = -10;
-					else this.latestLabel = Array.from(this.labels).indexOf(this.selectedLabel);
-
-					if (this.latestLabel === -10) this.newLabel = this.newLabel.replace(" ", "_").toLowerCase();
-					else this.newLabel = "";
-
-					if (!this.isModalCancelled) this.postFeedback(question, response, this.latestLabel, this.newLabel);
 				}
 				if (!this.isModalCancelled) {
 					this.chats.push({ from: "agent", content: this.newMessage });
@@ -241,17 +250,13 @@ export default {
 				}
 			}
 		},
-		async postFeedback(q, r, l, nl = "") {
-			// question: str
-			// response: str
-			// label_id: int
-			// label_name: str
-
-			const API_BASE = "http://127.0.0.1:5000/feedback";
+		async getLatestVecClientMessage() {
+			const API_BASE = "http://127.0.0.1:5000/vec/message";
+			let chats = this.chats.filter((b) => b.from === "client");
 			const requestOptions = {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ question: q, response: r, label_id: l, label_name: nl }),
+				body: JSON.stringify({ sentence: chats[chats.length - 1].content }),
 			};
 			fetch(API_BASE, requestOptions)
 				.then((r) => {
@@ -261,11 +266,37 @@ export default {
 					return r.json();
 				})
 				.then((d) => {
-					this.labels = [];
+					this.keywords = d.response.join(";");
 				})
 				.catch((error) => console.error(error));
-			this.selectedLabel = null;
-			this.newLabel = null;
+		},
+		async postFeedback(q, r, l, nl = "", kw = []) {
+			// question: str
+			// response: str
+			// label_id: int
+			// label_name: str
+
+			const API_BASE = "http://127.0.0.1:5000/feedback";
+			const requestOptions = {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ question: q, response: r, label_id: l, label_name: nl, keywords: kw }),
+			};
+			fetch(API_BASE, requestOptions)
+				.then((r) => {
+					if (!r.ok) {
+						throw Error(r.statusText);
+					}
+					return r.json();
+				})
+				.then((d) => {
+					console.log(d);
+					this.labels = [];
+					this.selectedLabel = null;
+					this.newLabel = null;
+					this.keywords = null;
+				})
+				.catch((error) => console.error(error));
 		},
 		submitLabel() {
 			this.showModal = !this.showModal;
