@@ -36,6 +36,9 @@
 					<div @click.prevent="navigateToNext('context')" class="w-full py-2 flex justify-center items-center cursor-pointer bg-indigo-500 text-white mt-3">
 						<p>Add Context</p>
 					</div>
+					<div @click.prevent="navigateToNext('label')" class="w-full py-2 flex justify-center items-center cursor-pointer bg-indigo-500 text-white mt-3">
+						<p>Manage Label</p>
+					</div>
 				</div>
 				<div class="flex flex-col flex-auto h-full">
 					<div class="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-screen p-4">
@@ -194,6 +197,9 @@ export default {
 			} else if (page === "context") {
 				this.isPageClicked = !this.isPageClicked;
 				this.$router.push("/context");
+			} else if (page === "label") {
+				this.isPageClicked = !this.isPageClicked;
+				this.$router.push("/label");
 			}
 		},
 
