@@ -65,12 +65,11 @@
 											<span v-for="label in data.Keywords" :key="label" class="text-xs font-semibold rounded-md bg-indigo-600 text-white py-2 col-span-1">{{ label }}</span>
 										</div>
 
-										<!-- <td v-for="label in data.labelKeywords" :key="label" class="inline-flex border-b border-white py-2 mt-2 ml-4 px-2 pr-3 text-sm font-medium text-white bg-indigo-400 items-center">{{ label }}</td> -->
 										<td class="border-b border-white relative whitespace-nowrap py-4 pr-4 pl-3 text-center text-sm font-medium sm:pr-8 lg:pr-8">
-											<button class="text-indigo-600 hover:text-indigo-900" @click.prevent="handlePost('d', [data.contextContent, data.label])">Delete</button>
+											<button class="text-indigo-600 hover:text-indigo-900" @click.prevent="handlePost('d', [data.label])">Delete</button>
 										</td>
 										<td class="border-b border-white relative whitespace-nowrap py-4 pr-4 pl-3 text-center text-sm font-medium sm:pr-8 lg:pr-8">
-											<button @click.prevent="showEditModal([data.contextContent, data.label])" class="text-indigo-600 hover:text-indigo-900">Edit</button>
+											<button @click.prevent="showEditModal([data.label, data.type, data.Keywords])" class="text-indigo-600 hover:text-indigo-900">Edit</button>
 										</td>
 									</tr>
 								</tbody>
@@ -84,18 +83,20 @@
 			<form @submit.prevent="submitLabel">
 				<div class="grid grid-cols-1 gap-2">
 					<div class="grid grid-cols-3 space-y-3">
-						<div class="flex justify-left items-center px-3"><label for="labels">Context</label></div>
-						<textarea type="text" class="h-[150px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg" v-model="contextContent"></textarea>
-						<div class="flex justify-left items-center px-3"><label for="labels">Select a label</label></div>
-						<select id="labels" v-model="selectedLabel" class="h-[50px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg cursor-pointer">
-							<option v-for="l in labels" :key="l">
-								{{ l }}
-							</option>
-						</select>
-					</div>
-					<div v-if="selectedLabel === 'Others'" class="grid grid-cols-3">
-						<div class="flex justify-center items-center"><label for="new_label">New label</label></div>
-						<input required type="text" v-model="newLabel" class="text-center h-[50px] outline-none active:outline-none bg-transparent border-b border-gray-400 col-span-2" />
+						<div class="flex justify-left items-center px-3"><label for="labels">Label Name</label></div>
+						<input type="text" class="h-[50px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg" v-model="labelName" />
+						<div class="flex justify-left items-center px-3"><label for="labels">Keywords</label></div>
+						<div class="relative mt-2 flex items-center col-span-2">
+							<input type="text" class="h-[50px] col-span-2 outline-none active:outline-none bg-transparent border border-gray-400 p-2 rounded-lg w-full" v-model="newKeyword" />
+							<div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
+								<button class="inline-flex items-center rounded border border-gray-200 px-2 hover:bg-indigo-600 hover:text-white font-sans text-xs text-gray-400" @click="addKeyword(newKeyword)">Add</button>
+							</div>
+						</div>
+						<div class="inline-grid grid-cols-3 gap-4 w-full border-b border-white pl-4 py-4 col-span-3">
+							<span v-for="(keyword, index) in labelKeywords" :key="index" class="text-xs font-semibold rounded-md bg-indigo-600 text-white py-2 col-span-1 hover:bg-red-200 hover:text-red-600 hover:border-transparent transition cursor-pointer" @click="removeKeyword(index)">{{
+								keyword
+							}}</span>
+						</div>
 					</div>
 				</div>
 				<div class="mt-10 flex justify-end w-full gap-2">
@@ -116,27 +117,34 @@ export default {
 		return {
 			showModal: false,
 			isModalCancelled: false,
-			contextContent: null,
 			modalTitle: null,
 			searchQuery: "",
-			originalData: null,
 			labelData: [],
-			selectedLabel: null,
-			newLabel: null,
 			labelNo: null,
 			labelName: null,
+			newKeyword: "",
 			labelKeywords: [],
-			labels: [],
+			mode: null,
 		};
 	},
 	methods: {
+		addKeyword(keyword) {
+			if (this.newKeyword !== this.labelName) {
+				keyword = keyword.replace(" ", "_").toLowerCase();
+				this.labelKeywords.push(keyword);
+				this.newKeyword = null;
+			}
+		},
+		removeKeyword(index) {
+			this.labelKeywords.splice(index, 1);
+		},
 		showEditModal(d) {
 			this.showModal = !this.showModal;
 			this.modalTitle = "Edit Details";
 			this.mode = "m";
-			this.contextContent = d[0];
-			this.selectedLabel = this.labels[d[1]];
-			this.originalData = d;
+			this.labelNo = d[0];
+			this.labelName = d[1];
+			this.labelKeywords = d[2];
 		},
 		showAddModal() {
 			this.showModal = !this.showModal;
@@ -146,91 +154,80 @@ export default {
 		cancelSubmit() {
 			this.showModal = false;
 			this.isModalCancelled = true;
-			this.selectedLabel = null;
-			this.newLabel = null;
-			this.contextContent = null;
+			this.labelName = null;
+			this.newKeyword = null;
+			this.labelKeywords = null;
 			this.mode = "";
 			this.modalTitle = "";
 		},
 		goBack() {
 			this.$router.go(-1);
 		},
-		// async handlePost(mode, d = null) {
-		// 	if (mode === "a") {
-		// 		if (this.selectedLabel === "Others") this.latestLabel = -10;
-		// 		else this.latestLabel = Array.from(this.labels).indexOf(this.selectedLabel);
+		async handlePost(mode, d = null) {
+			if (mode === "a") {
+				const data = {
+					mode: mode,
+					data: [this.labelName, this.labelKeywords],
+				};
+				try {
+					const response = await fetch("http://127.0.0.1:5000/label_data/update", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify(data),
+					});
+					const responseData = await response.json();
+					console.log(responseData);
+				} catch (error) {
+					console.error(error);
+				}
+			} else if (mode === "d") {
+				const data = {
+					mode: mode,
+					data: d,
+				};
+				console.log(data);
+				try {
+					const response = await fetch("http://127.0.0.1:5000/label_data/update", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify(data),
+					});
+					const responseData = await response.json();
+					console.log(responseData);
+				} catch (error) {
+					console.error(error);
+				}
+			} else if (mode === "m") {
+				const data = {
+					mode: mode,
+					data: [this.labelNo, this.labelName, this.labelKeywords],
+				};
+				try {
+					const response = await fetch("http://127.0.0.1:5000/label_data/update", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify(data),
+					});
 
-		// 		if (this.latestLabel === -10) this.newLabel = this.newLabel.replace(" ", "_").toLowerCase();
-		// 		else this.newLabel = "";
+					const responseData = await response.json();
 
-		// 		const data = {
-		// 			mode: mode,
-		// 			data: [this.contextContent, this.latestLabel, this.newLabel],
-		// 		};
-		// 		try {
-		// 			const response = await fetch("http://127.0.0.1:5000/context_data/update", {
-		// 				method: "POST",
-		// 				headers: {
-		// 					"Content-Type": "application/json",
-		// 				},
-		// 				body: JSON.stringify(data),
-		// 			});
-		// 			const responseData = await response.json();
-		// 			console.log(responseData);
-		// 		} catch (error) {
-		// 			console.error(error);
-		// 		}
-		// 	} else if (mode === "d") {
-		// 		const data = {
-		// 			mode: mode,
-		// 			data: d,
-		// 		};
-		// 		try {
-		// 			const response = await fetch("http://127.0.0.1:5000/context_data/update", {
-		// 				method: "POST",
-		// 				headers: {
-		// 					"Content-Type": "application/json",
-		// 				},
-		// 				body: JSON.stringify(data),
-		// 			});
-
-		// 			const responseData = await response.json();
-
-		// 			console.log(responseData);
-		// 		} catch (error) {
-		// 			console.error(error);
-		// 		}
-		// 	} else if (mode === "m") {
-		// 		if (!this.newLabel) this.newLabel = "";
-		// 		let tempLabel = this.labels.indexOf(this.selectedLabel);
-		// 		this.selectedLabel = tempLabel == this.labels.length - 1 ? -10 : tempLabel;
-		// 		const data = {
-		// 			mode: mode,
-		// 			data: [this.contextContent, this.selectedLabel, this.newLabel, this.originalData],
-		// 		};
-		// 		try {
-		// 			const response = await fetch("http://127.0.0.1:5000/context_data/update", {
-		// 				method: "POST",
-		// 				headers: {
-		// 					"Content-Type": "application/json",
-		// 				},
-		// 				body: JSON.stringify(data),
-		// 			});
-
-		// 			const responseData = await response.json();
-
-		// 			console.log(responseData);
-		// 		} catch (error) {
-		// 			console.error(error);
-		// 		}
-		// 	}
-		// 	this.selectedLabel = null;
-		// 	this.newLabel = null;
-		// 	this.contextContent = null;
-		// 	this.originalData = null;
-		// 	this.showModal = false;
-		// 	this.GetData();
-		// },
+					console.log(responseData);
+				} catch (error) {
+					console.error(error);
+				}
+			}
+			this.labelKeywords = null;
+			this.newKeyword = null;
+			this.labelName = null;
+			this.showModal = false;
+			this.GetData();
+		},
 		GetData() {
 			const API_BASE = "http://127.0.0.1:5000/label_data";
 			const requestOptions = {
@@ -248,7 +245,6 @@ export default {
 						};
 					});
 					this.labelData = jsonLabelData;
-					console.log(this.labelData);
 				})
 				.catch((error) => {
 					console.error(error);
